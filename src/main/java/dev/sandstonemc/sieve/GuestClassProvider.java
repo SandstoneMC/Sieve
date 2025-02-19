@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Provides lookups for classes added by guest modules. Classes are currently mapped using their fully qualified names
@@ -16,10 +18,52 @@ import java.util.Map;
 public final class GuestClassProvider {
 
     /**
+     * Reserved names from modules that are shipped with some JDKs.
+     */
+    private static final Set<String> RESERVED_JDK = Set.of(
+            "com.sun.",
+            "sun.",
+            "java.",
+            "javax.",
+            "jdk.",
+            "org.ietf.",
+            "org.w3c",
+            "org.xml",
+            "org.jcp",
+            "org.netscape"
+    );
+
+    /**
      * The minimum depth for a class, including the class itself.
      */
     private static final int MINIMUM_CLASS_DEPTH = 4;
     private final Map<String, byte[]> data = new HashMap<>();
+    private final Set<String> reservedNames = new HashSet<>();
+
+    /**
+     * Reserves a package name, preventing any guest module from declaring classes in them.
+     *
+     * @param name A partial package name that will be reserved.
+     */
+    public void reserve(String name) {
+        this.reservedNames.add(name);
+    }
+
+    /**
+     * Reserves common JDK packages, preventing any guest modules from declaring classes in them.
+     */
+    public void reserveJDK() {
+        this.reservedNames.addAll(RESERVED_JDK);
+    }
+
+    public boolean isReserved(String name) {
+        for (String r : this.reservedNames) {
+            if (name.startsWith(r)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * Manually defines a class file.
@@ -27,10 +71,14 @@ public final class GuestClassProvider {
      * @param name The fully qualified name of the class.
      * @param path The path to a valid .class file.
      */
-    // TODO Add restricted package names.
     public void add(String name, Path path) {
+        for (String reserved : this.reservedNames) {
+            if (name.startsWith(reserved)) {
+                throw new InvalidClassNameException(name, "Could not load class '" + name + "' as '" + reserved + "' is reserved.");
+            }
+        }
         if (validateGuestClassName(name)) {
-            data.put(name, read(path));
+            this.data.put(name, read(path));
         }
     }
 

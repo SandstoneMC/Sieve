@@ -20,6 +20,7 @@ public class Main {
         // defining the class. In a future version we will collect them from
         // jar files.
         final GuestClassProvider guest = new GuestClassProvider();
+        guest.reserveJDK();
         guest.add("dev.sandstonemc.sieve.test.TestPlugin", Path.of("./build\\classes\\java\\test\\dev\\sandstonemc\\sieve\\test\\TestPlugin.class")); // Created when the project is built.
 
         // Creates the sandboxed class loader to load guest module classes.
