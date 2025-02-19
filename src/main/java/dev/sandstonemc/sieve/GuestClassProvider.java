@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Provides lookups for classes added by guest modules. Classes are currently mapped using their fully qualified names
@@ -79,6 +80,26 @@ public final class GuestClassProvider {
         }
         if (validateGuestClassName(name)) {
             this.data.put(name, read(path));
+        }
+    }
+
+    /**
+     * Adds all class files from a directory and its subdirectories to the guest environment.
+     *
+     * @param path The directory to add.
+     */
+    public void addDir(Path path) {
+        final int pathLength = path.toString().length() + 1;
+        try (Stream<Path> files = Files.walk(path)) {
+            files.filter(entry -> entry.getFileName().toString().endsWith(".class")).forEach(entry -> {
+                final String pathString = entry.toString();
+                if (!pathString.contains("main") && !pathString.contains("IPlugin")) {
+                    this.add(pathString.substring(pathLength, pathString.length() - 6).replace("\\", "."), entry);
+                }
+            });
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
