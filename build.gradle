@@ -1,3 +1,18 @@
 plugins {
     id 'java'
 }
+
+sourceSets {
+    test_host {
+        java {
+            compileClasspath += main.output
+            runtimeClasspath += main.output
+        }
+    }
+    test_guest {
+        java {
+            compileClasspath += test_host.output
+            runtimeClasspath += test_host.output
+        }
+    }
+}

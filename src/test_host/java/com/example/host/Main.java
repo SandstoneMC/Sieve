@@ -1,5 +1,6 @@
 package dev.sandstonemc.sieve.test;
 
+import com.example.host.IPlugin;
 import dev.sandstonemc.sieve.GuestClassProvider;
 import dev.sandstonemc.sieve.HostClassAccess;
 import dev.sandstonemc.sieve.SieveClassLoader;
@@ -14,14 +15,15 @@ public class Main {
         // Define which classes from the host are made available to guests.
         final HostClassAccess host = new HostClassAccess();
         host.allowJDK();
-        host.allow("dev.sandstonemc.sieve.test.IPlugin");
+        host.allow("com.example.host.IPlugin");
 
         // Collect classes from guest modules. For now, we are just manually
         // defining the class. In a future version we will collect them from
         // jar files.
         final GuestClassProvider guest = new GuestClassProvider();
         guest.reserveJDK();
-        guest.add("dev.sandstonemc.sieve.test.TestPlugin", Path.of("./build\\classes\\java\\test\\dev\\sandstonemc\\sieve\\test\\TestPlugin.class")); // Created when the project is built.
+        guest.reserve("dev.sandstonemc.");
+        guest.addDir(Path.of("./build\\classes\\java\\test_guest")); // Make sure the project is built!
 
         // Creates the sandboxed class loader to load guest module classes.
         // Host classes are loaded through the current class loader context.
@@ -30,7 +32,7 @@ public class Main {
         // Load the test plugin class and instantiate it using reflection.
         // This is only required to invoke the initial entry point. The host
         // can fully utilize the guest afterward.
-        final IPlugin testPlugin = newInstance(classLoader, IPlugin.class, "dev.sandstonemc.sieve.test.TestPlugin");
+        final IPlugin testPlugin = newInstance(classLoader, IPlugin.class, "com.example.guest.TestPlugin");
         System.out.println("Hello from plugin " + testPlugin.getName());
     }
 

@@ -1,4 +1,4 @@
-package dev.sandstonemc.sieve.test;
+package com.example.host;
 
 public interface IPlugin {
     String getName();
