@@ -12,6 +12,9 @@ public final class ProhibitedClassException extends ClassNotFoundException {
     @Serial
     private static final long serialVersionUID = -4391628373568025220L;
 
+    /**
+     * The fully qualified name of the prohibited class.
+     */
     private final String className;
 
     public ProhibitedClassException(String className) {
